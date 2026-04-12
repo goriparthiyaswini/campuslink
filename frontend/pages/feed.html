@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feed — CampusLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--pink:#FF6B9D;--purple:#9B59F5;--orange:#FF8C42;--yellow:#FFD166;--cyan:#06D6A0;--blue:#4ECDC4;--bg:#0F0F1A;--card:#1A1A2E;--text:#F0F0FF;--muted:#8888AA;--border:rgba(255,255,255,0.08);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);padding-top:62px;}
+    .page{max-width:680px;margin:0 auto;padding:24px 16px;}
+    .create-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+    .create-top{display:flex;gap:12px;align-items:flex-start;}
+    .avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--pink),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:white;}
+    .create-input{flex:1;background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:14px;padding:12px 16px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.95rem;resize:none;outline:none;transition:border-color 0.3s;min-height:80px;}
+    .create-input:focus{border-color:var(--purple);}
+
+    /* MEDIA TOOLBAR */
+    .media-toolbar{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;align-items:center;}
+    .media-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    .media-btn:hover{background:rgba(255,255,255,0.06);color:var(--text);}
+    .media-btn.image:hover{border-color:var(--cyan);color:var(--cyan);}
+    .media-btn.video:hover{border-color:var(--purple);color:var(--purple);}
+    .media-btn.audio:hover{border-color:var(--orange);color:var(--orange);}
+    .media-btn.doc:hover{border-color:var(--yellow);color:var(--yellow);}
+    .media-btn.poll:hover{border-color:var(--pink);color:var(--pink);}
+    .media-btn.link:hover{border-color:var(--blue);color:var(--blue);}
+    .file-input{display:none;}
+
+    /* MEDIA PREVIEW */
+    .media-preview{margin-top:10px;display:none;}
+    .media-preview.show{display:block;}
+    .preview-img{max-width:100%;max-height:300px;border-radius:12px;object-fit:cover;}
+    .preview-video{max-width:100%;max-height:300px;border-radius:12px;}
+    .preview-audio{width:100%;margin-top:6px;}
+    .preview-doc{display:flex;align-items:center;gap:10px;padding:12px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid var(--border);}
+    .preview-doc-icon{font-size:1.8rem;}
+    .preview-doc-name{font-size:0.85rem;font-weight:700;color:var(--text);}
+    .preview-remove{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;}
+    .preview-remove:hover{color:var(--pink);}
+
+    /* POLL BUILDER */
+    .poll-builder{margin-top:10px;background:rgba(255,255,255,0.04);border-radius:12px;padding:14px;border:1px solid var(--border);display:none;}
+    .poll-builder.show{display:block;}
+    .poll-title{font-size:0.82rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;}
+    .poll-option{display:flex;gap:8px;margin-bottom:8px;}
+    .poll-input{flex:1;padding:8px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.88rem;outline:none;}
+    .poll-input:focus{border-color:var(--purple);}
+    .btn-add-option{padding:6px 14px;background:transparent;border:1.5px dashed var(--border);border-radius:10px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s;width:100%;margin-top:4px;}
+    .btn-add-option:hover{border-color:var(--purple);color:var(--purple);}
+
+    /* LINK INPUT */
+    .link-input-row{margin-top:10px;display:none;}
+    .link-input-row.show{display:flex;gap:8px;}
+    .link-input{flex:1;padding:9px 14px;background:rgba(255,255,255,0.05);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.88rem;outline:none;}
+    .link-input:focus{border-color:var(--blue);}
+
+    .create-actions{display:flex;gap:8px;margin-top:12px;align-items:center;}
+    .type-select{padding:6px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:0.82rem;outline:none;cursor:pointer;}
+    .tags-input{flex:1;padding:6px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.82rem;outline:none;}
+    .tags-input::placeholder{color:var(--muted);}
+    .btn-post{padding:8px 20px;background:linear-gradient(135deg,var(--pink),var(--purple));border:none;border-radius:10px;color:white;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.88rem;cursor:pointer;transition:all 0.2s;}
+    .btn-post:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(155,89,245,0.4);}
+
+    /* UPLOAD PROGRESS */
+    .upload-progress{margin-top:8px;display:none;}
+    .upload-progress.show{display:block;}
+    .progress-bar{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:2px;transition:width 0.3s;width:0%;}
+    .progress-text{font-size:0.72rem;color:var(--muted);margin-top:4px;}
+
+    /* FILTER TABS */
+    .filter-tabs{display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;}
+    .filter-tabs::-webkit-scrollbar{display:none;}
+    .ftab{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);color:var(--muted);font-size:0.82rem;font-weight:700;cursor:pointer;background:transparent;white-space:nowrap;transition:all 0.2s;}
+    .ftab.active{background:linear-gradient(135deg,var(--purple),var(--pink));border-color:transparent;color:white;}
+
+    /* POST CARD */
+    .post-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:fadeIn 0.4s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+    .post-header{display:flex;gap:12px;align-items:center;margin-bottom:14px;}
+    .post-avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--pink),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:white;overflow:hidden;}
+    .post-avatar img{width:100%;height:100%;object-fit:cover;}
+    .post-meta{flex:1;}
+    .post-author{font-weight:800;font-size:0.95rem;}
+    .post-info{font-size:0.78rem;color:var(--muted);}
+    .post-tag{padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;}
+    .tag-post{background:rgba(155,89,245,0.2);color:var(--purple);}
+    .tag-question{background:rgba(255,107,157,0.2);color:var(--pink);}
+    .tag-project{background:rgba(6,214,160,0.2);color:var(--cyan);}
+    .tag-event{background:rgba(255,209,102,0.2);color:var(--yellow);}
+    .post-content{font-size:0.95rem;line-height:1.6;margin-bottom:14px;}
+
+    /* POST MEDIA */
+    .post-media{margin-bottom:14px;border-radius:14px;overflow:hidden;}
+    .post-media img{width:100%;max-height:400px;object-fit:cover;display:block;}
+    .post-media video{width:100%;max-height:400px;border-radius:14px;}
+    .post-media audio{width:100%;margin-top:4px;}
+    .post-doc-link{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid var(--border);text-decoration:none;color:var(--text);transition:background 0.2s;}
+    .post-doc-link:hover{background:rgba(255,255,255,0.08);}
+
+    /* POLL */
+    .post-poll{margin-bottom:14px;}
+    .poll-question{font-weight:800;margin-bottom:10px;}
+    .poll-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1.5px solid var(--border);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+    .poll-opt:hover{border-color:var(--purple);}
+    .poll-opt.voted{border-color:var(--purple);background:rgba(155,89,245,0.1);}
+    .poll-fill{position:absolute;left:0;top:0;bottom:0;background:rgba(155,89,245,0.1);transition:width 0.5s;z-index:0;}
+    .poll-opt-label{flex:1;font-size:0.88rem;font-weight:700;position:relative;z-index:1;}
+    .poll-pct{font-size:0.78rem;color:var(--muted);font-weight:700;position:relative;z-index:1;}
+
+    /* LINK PREVIEW */
+    .post-link{display:flex;align-items:center;gap:10px;padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;text-decoration:none;color:var(--text);}
+    .post-link:hover{background:rgba(255,255,255,0.07);}
+    .link-icon{font-size:1.4rem;}
+    .link-url{font-size:0.78rem;color:var(--muted);word-break:break-all;}
+
+    .post-tags-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+    .ptag{padding:2px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;background:rgba(255,255,255,0.06);color:var(--muted);}
+    .post-actions{display:flex;gap:12px;border-top:1px solid var(--border);padding-top:12px;}
+    .action-btn{display:flex;align-items:center;gap:5px;background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;padding:6px 12px;border-radius:10px;transition:all 0.2s;}
+    .action-btn:hover{background:rgba(255,255,255,0.06);color:var(--text);}
+    .action-btn.liked{color:var(--pink);}
+    .comments-section{margin-top:14px;border-top:1px solid var(--border);padding-top:14px;display:none;}
+    .comment{display:flex;gap:10px;margin-bottom:10px;}
+    .comment-bubble{flex:1;background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 14px;}
+    .comment-author{font-size:0.8rem;font-weight:800;margin-bottom:4px;}
+    .comment-text{font-size:0.85rem;}
+    .comment-input-row{display:flex;gap:8px;margin-top:10px;}
+    .comment-input{flex:1;padding:8px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.85rem;outline:none;}
+    .btn-comment{padding:8px 14px;background:var(--purple);border:none;border-radius:10px;color:white;font-family:'Nunito',sans-serif;font-weight:700;cursor:pointer;font-size:0.82rem;}
+    .loading{text-align:center;padding:40px;color:var(--muted);}
+    .empty{text-align:center;padding:60px 20px;color:var(--muted);}
+    .points-toast{position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,var(--cyan),var(--blue));color:white;padding:10px 18px;border-radius:14px;font-weight:700;font-size:0.88rem;z-index:9999;display:none;animation:slideIn 0.3s ease;}
+    @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:none;opacity:1}}
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+<div class="page">
+  <!-- CREATE POST -->
+  <div class="create-card">
+    <div class="create-top">
+      <div class="avatar" id="myAvatar">?</div>
+      <textarea class="create-input" id="postContent" placeholder="What's on your mind? Share a question, idea, project or event... 🚀"></textarea>
+    </div>
+
+    <!-- MEDIA PREVIEW -->
+    <div class="media-preview" id="mediaPreview"></div>
+
+    <!-- UPLOAD PROGRESS -->
+    <div class="upload-progress" id="uploadProgress">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Uploading...</div>
+    </div>
+
+    <!-- POLL BUILDER -->
+    <div class="poll-builder" id="pollBuilder">
+      <div class="poll-title">📊 Poll Options</div>
+      <div id="pollOptions">
+        <div class="poll-option"><input class="poll-input" placeholder="Option 1"/></div>
+        <div class="poll-option"><input class="poll-input" placeholder="Option 2"/></div>
+      </div>
+      <button class="btn-add-option" onclick="addPollOption()">+ Add Option</button>
+    </div>
+
+    <!-- LINK INPUT -->
+    <div class="link-input-row" id="linkInputRow">
+      <input class="link-input" id="linkInput" placeholder="🔗 Paste a link..."/>
+    </div>
+
+    <!-- MEDIA TOOLBAR -->
+    <div class="media-toolbar">
+      <button class="media-btn image" onclick="document.getElementById('imgInput').click()">🖼️ Image</button>
+      <button class="media-btn video" onclick="document.getElementById('vidInput').click()">🎬 Video</button>
+      <button class="media-btn audio" onclick="document.getElementById('audInput').click()">🎵 Audio</button>
+      <button class="media-btn doc" onclick="document.getElementById('docInput').click()">📄 Document</button>
+      <button class="media-btn poll" onclick="togglePoll()">📊 Poll</button>
+      <button class="media-btn link" onclick="toggleLink()">🔗 Link</button>
+      <input type="file" class="file-input" id="imgInput" accept="image/*" onchange="handleFile(this,'image')"/>
+      <input type="file" class="file-input" id="vidInput" accept="video/*" onchange="handleFile(this,'video')"/>
+      <input type="file" class="file-input" id="audInput" accept="audio/*" onchange="handleFile(this,'audio')"/>
+      <input type="file" class="file-input" id="docInput" accept=".pdf,.doc,.docx" onchange="handleFile(this,'document')"/>
+    </div>
+
+    <div class="create-actions">
+      <select class="type-select" id="postType">
+        <option value="post">💬 Post</option>
+        <option value="question">❓ Question</option>
+        <option value="project">🚀 Project</option>
+        <option value="event">📅 Event</option>
+      </select>
+      <input class="tags-input" id="postTags" placeholder="#tags (comma separated)"/>
+      <button class="btn-post" onclick="createPost()">Post ✨</button>
+    </div>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div class="filter-tabs">
+    <button class="ftab active" onclick="filterPosts('all',this)">🌐 All</button>
+    <button class="ftab" onclick="filterPosts('post',this)">💬 Posts</button>
+    <button class="ftab" onclick="filterPosts('question',this)">❓ Questions</button>
+    <button class="ftab" onclick="filterPosts('project',this)">🚀 Projects</button>
+    <button class="ftab" onclick="filterPosts('event',this)">📅 Events</button>
+  </div>
+
+  <div id="feed"><div class="loading">Loading posts... ✨</div></div>
+</div>
+<div class="points-toast" id="pointsToast">+5 points! 🎉</div>
+
+<script>
+var me = {};
+var allPosts = [];
+var currentFilter = 'all';
+var uploadedMedia = null;
+
+window.addEventListener('DOMContentLoaded', function() {
+  authGuard();
+  me = JSON.parse(localStorage.getItem('user')||'{}');
+  var av = document.getElementById('myAvatar');
+  if (me.avatar) {
+    av.innerHTML = '<img src="' + me.avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>';
+  } else if (me.name) {
+    av.textContent = me.name[0].toUpperCase();
+  }
+  loadFeed();
+});
+
+async function loadFeed() {
+  var data = await apiFetch('/posts');
+  if (!data) return;
+  allPosts = data;
+  renderPosts(data);
+}
+
+function filterPosts(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.ftab').forEach(function(t){t.classList.remove('active');});
+  btn.classList.add('active');
+  var filtered = type==='all' ? allPosts : allPosts.filter(function(p){return p.type===type;});
+  renderPosts(filtered);
+}
+
+function timeAgo(date) {
+  var s = Math.floor((Date.now()-new Date(date))/1000);
+  if (s<60) return 'just now';
+  if (s<3600) return Math.floor(s/60)+'m ago';
+  if (s<86400) return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+
+function renderMediaHTML(p) {
+  if (!p.media || !p.media.url) return '';
+  var url = p.media.url;
+  var type = p.media.type;
+  var fname = p.media.filename || 'File';
+  if (type === 'image') return '<div style="margin-bottom:14px;border-radius:14px;overflow:hidden"><img src="' + url + '" style="width:100%;max-height:400px;object-fit:cover;display:block"/></div>';
+  if (type === 'video') return '<div style="margin-bottom:14px"><video controls style="width:100%;border-radius:14px"><source src="' + url + '"></video></div>';
+  if (type === 'audio') return '<div style="margin-bottom:14px"><audio controls style="width:100%"><source src="' + url + '"></audio></div>';
+  if (type === 'document') return '<a href="' + url + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.08);text-decoration:none;color:#F0F0FF;margin-bottom:14px">📄 ' + fname + ' <span style="margin-left:auto">↓ Download</span></a>';
+  return '';
+}
+
+function renderPollHTML(p) {
+  if (!p.poll || !p.poll.options || !p.poll.options.length) return '';
+  var total = p.poll.options.reduce(function(a,o){return a+(o.votes||0);},0);
+  var question = p.poll.question || p.content || 'Vote!';
+  return '<div class="post-poll">'+
+    '<div class="poll-question">📊 '+question+'</div>'+
+    p.poll.options.map(function(o,i){
+      var pct = total>0 ? Math.round((o.votes||0)/total*100) : 0;
+      return '<div class="poll-opt" onclick="votePoll(\''+p._id+'\','+i+',this)">'+
+        '<div class="poll-fill" style="width:'+pct+'%"></div>'+
+        '<span class="poll-opt-label">'+o.text+'</span>'+
+        '<span class="poll-pct">'+pct+'%</span>'+
+      '</div>';
+    }).join('')+
+    '<div style="font-size:0.72rem;color:var(--muted);margin-top:6px;">'+total+' votes</div>'+
+  '</div>';
+}
+
+function renderLinkHTML(p) {
+  if (!p.link) return '';
+  return '<a class="post-link" href="'+p.link+'" target="_blank">'+
+    '<span class="link-icon">🔗</span>'+
+    '<div><div style="font-weight:700;font-size:0.85rem;margin-bottom:2px">Shared Link</div>'+
+    '<div class="link-url">'+p.link+'</div></div>'+
+    '<span style="margin-left:auto">↗️</span></a>';
+}
+
+function renderPosts(posts) {
+  var feed = document.getElementById('feed');
+  if (!posts.length) {
+    feed.innerHTML = '<div class="empty"><div style="font-size:3rem">📭</div><p>No posts yet. Be the first! ✨</p></div>';
+    return;
+  }
+  feed.innerHTML = posts.map(function(p) {
+    var liked = p.likes && p.likes.includes(me._id);
+    var tagClass = {post:'tag-post',question:'tag-question',project:'tag-project',event:'tag-event'}[p.type]||'tag-post';
+    var typeLabel = {post:'Post',question:'Question',project:'Project',event:'Event'}[p.type]||'Post';
+    var initials = p.author && p.author.name ? p.author.name[0].toUpperCase() : '?';
+    var avatarHTML = (p.author && p.author.avatar) ?
+      '<div class="post-avatar" style="overflow:hidden"><img src="' + p.author.avatar + '" style="width:100%;height:100%;object-fit:cover"/></div>' :
+      '<div class="post-avatar">' + initials + '</div>';
+    return '<div class="post-card" id="post-'+p._id+'">'+
+      '<div class="post-header">'+avatarHTML+
+        '<div class="post-meta">'+
+          '<div class="post-author">'+(p.author&&p.author.name||'Unknown')+'</div>'+
+          '<div class="post-info">'+(p.author&&p.author.college||'')+' · '+timeAgo(p.createdAt)+'</div>'+
+        '</div>'+
+        '<span class="post-tag '+tagClass+'">'+typeLabel+'</span>'+
+      '</div>'+
+      '<div class="post-content">'+p.content+'</div>'+
+      renderMediaHTML(p)+renderPollHTML(p)+renderLinkHTML(p)+
+      (p.tags&&p.tags.length?'<div class="post-tags-row">'+p.tags.map(function(t){return '<span class="ptag">#'+t+'</span>';}).join('')+'</div>':'')+
+      '<div class="post-actions">'+
+        '<button class="action-btn '+(liked?'liked':'')+'" onclick="toggleLike(\''+p._id+'\',this)">'+
+          (liked?'❤️':'🤍')+' <span class="like-count">'+(p.likes&&p.likes.length||0)+'</span>'+
+        '</button>'+
+        '<button class="action-btn" onclick="toggleComments(\''+p._id+'\')">💬 '+(p.comments&&p.comments.length||0)+' Comments</button>'+
+        '<button class="action-btn" onclick="sharePost(\''+p._id+'\')">↗️ Share</button>'+
+      '</div>'+
+      '<div class="comments-section" id="comments-'+p._id+'">'+
+        (p.comments||[]).map(function(c){return '<div class="comment">'+
+          '<div class="avatar" style="width:32px;height:32px;font-size:0.75rem;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;flex-shrink:0">'+(c.author&&c.author.name?c.author.name[0].toUpperCase():'?')+'</div>'+
+          '<div class="comment-bubble"><div class="comment-author">'+(c.author&&c.author.name||'Unknown')+'</div><div class="comment-text">'+c.content+'</div></div>'+
+        '</div>';}).join('')+
+        '<div class="comment-input-row">'+
+          '<input class="comment-input" id="ci-'+p._id+'" placeholder="Write a comment..."/>'+
+          '<button class="btn-comment" onclick="postComment(\''+p._id+'\')">Send</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// FILE UPLOAD
+async function handleFile(input, type) {
+  var file = input.files[0];
+  if (!file) return;
+  var preview = document.getElementById('mediaPreview');
+  var progress = document.getElementById('uploadProgress');
+  var fill = document.getElementById('progressFill');
+  var progressText = document.getElementById('progressText');
+  progress.classList.add('show');
+  fill.style.width = '30%';
+  progressText.textContent = 'Uploading ' + file.name + '...';
+
+  var formData = new FormData();
+  formData.append('file', file);
+  try {
+    var res = await fetch('http://localhost:5000/api/upload/single', {
+      method:'POST',
+      headers:{'Authorization':'Bearer '+localStorage.getItem('token')},
+      body: formData
+    });
+    fill.style.width = '100%';
+    var data = await res.json();
+    uploadedMedia = {url:data.url, type:type, filename:data.filename, mimetype:data.mimetype};
+    progressText.textContent = '✅ Uploaded: ' + file.name;
+
+    // Show preview
+    preview.classList.add('show');
+    if (type==='image') preview.innerHTML = '<div style="position:relative"><img class="preview-img" src="'+data.url+'"/><button class="preview-remove" onclick="removeMedia()">✕</button></div>';
+    else if (type==='video') preview.innerHTML = '<video class="preview-video" controls><source src="'+data.url+'"></video><button class="preview-remove" onclick="removeMedia()">✕</button>';
+    else if (type==='audio') preview.innerHTML = '<audio class="preview-audio" controls><source src="'+data.url+'"></audio><button class="preview-remove" onclick="removeMedia()">✕</button>';
+    else preview.innerHTML = '<div class="preview-doc"><span class="preview-doc-icon">📄</span><span class="preview-doc-name">'+file.name+'</span><button class="preview-remove" onclick="removeMedia()">✕</button></div>';
+
+    setTimeout(function(){progress.classList.remove('show');},1500);
+  } catch(e) {
+    progressText.textContent = '❌ Upload failed!';
+    setTimeout(function(){progress.classList.remove('show');},2000);
+  }
+}
+
+function removeMedia() {
+  uploadedMedia = null;
+  document.getElementById('mediaPreview').classList.remove('show');
+  document.getElementById('mediaPreview').innerHTML = '';
+}
+
+function togglePoll() {
+  var pb = document.getElementById('pollBuilder');
+  pb.classList.toggle('show');
+  document.getElementById('linkInputRow').classList.remove('show');
+}
+
+function toggleLink() {
+  var lr = document.getElementById('linkInputRow');
+  lr.classList.toggle('show');
+  document.getElementById('pollBuilder').classList.remove('show');
+}
+
+function addPollOption() {
+  var opts = document.getElementById('pollOptions');
+  var n = opts.children.length + 1;
+  var div = document.createElement('div');
+  div.className = 'poll-option';
+  div.innerHTML = '<input class="poll-input" placeholder="Option '+n+'"/>';
+  opts.appendChild(div);
+}
+
+async function createPost() {
+  var content = document.getElementById('postContent').value.trim();
+  var type = document.getElementById('postType').value;
+  var tagsRaw = document.getElementById('postTags').value;
+  var tags = tagsRaw.split(',').map(function(t){return t.trim().replace('#','');}).filter(Boolean);
+  var link = document.getElementById('linkInput').value.trim();
+
+  // Get poll data
+  var poll = null;
+  var pollBuilder = document.getElementById('pollBuilder');
+  if (pollBuilder.classList.contains('show')) {
+    var opts = Array.from(document.querySelectorAll('.poll-input')).map(function(i){return i.value.trim();}).filter(Boolean);
+    if (opts.length >= 2) {
+      poll = { question: content||'📊 Vote below!', options: opts.map(function(t){return {text:t,votes:0};}) };
+    }
+  }
+
+  if (!content && !uploadedMedia && !poll) return;
+
+  var body = { content: content || (uploadedMedia ? '📎 Shared a file' : '📊 Poll'), type: type, tags: tags };
+  if (uploadedMedia) body.media = uploadedMedia;
+  if (poll) body.poll = poll;
+  if (link) body.link = link;
+
+  var data = await apiFetch('/posts', {method:'POST', body:JSON.stringify(body)});
+  if (!data) return;
+  document.getElementById('postContent').value = '';
+  document.getElementById('postTags').value = '';
+  document.getElementById('linkInput').value = '';
+  removeMedia();
+  document.getElementById('pollBuilder').classList.remove('show');
+  document.getElementById('linkInputRow').classList.remove('show');
+  showToast('+5 points! 🎉');
+  loadFeed();
+}
+
+async function toggleLike(postId, btn) {
+  var data = await apiFetch('/posts/'+postId+'/like', {method:'POST'});
+  if (!data) return;
+  btn.querySelector('.like-count').textContent = data.likes;
+  btn.innerHTML = (data.liked?'❤️':'🤍')+' <span class="like-count">'+data.likes+'</span>';
+  btn.classList.toggle('liked', data.liked);
+}
+
+function toggleComments(postId) {
+  var sec = document.getElementById('comments-'+postId);
+  sec.style.display = sec.style.display==='block' ? 'none' : 'block';
+}
+
+async function postComment(postId) {
+  var input = document.getElementById('ci-'+postId);
+  var content = input.value.trim();
+  if (!content) return;
+  await apiFetch('/posts/'+postId+'/comment', {method:'POST',body:JSON.stringify({content})});
+  input.value = '';
+  loadFeed();
+}
+
+function showToast(msg) {
+  var t = document.getElementById('pointsToast');
+  t.textContent = msg; t.style.display='block';
+  setTimeout(function(){t.style.display='none';},2500);
+}
+
+function sharePost(id) {
+  navigator.clipboard && navigator.clipboard.writeText(location.origin+'/post/'+id);
+  showToast('Link copied! 🔗');
+}
+</script>
+</body>
+</html>

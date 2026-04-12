@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discussions — CampusLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--pink:#FF6B9D;--purple:#9B59F5;--cyan:#06D6A0;--yellow:#FFD166;--bg:#0F0F1A;--card:#1A1A2E;--text:#F0F0FF;--muted:#8888AA;--border:rgba(255,255,255,0.08);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);padding-top:62px;}
+    .page{max-width:800px;margin:0 auto;padding:24px 16px;}
+
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    h1{font-size:1.6rem;font-weight:900;}
+    .btn-new{
+      padding:10px 20px;background:linear-gradient(135deg,var(--pink),var(--purple));
+      border:none;border-radius:12px;color:white;font-family:'Nunito',sans-serif;
+      font-weight:800;cursor:pointer;font-size:0.88rem;transition:all 0.2s;
+    }
+    .btn-new:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(155,89,245,0.4);}
+
+    /* FILTERS */
+    .filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+    .cat-btn{
+      padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);
+      color:var(--muted);font-size:0.8rem;font-weight:700;cursor:pointer;
+      background:transparent;transition:all 0.2s;
+    }
+    .cat-btn.active{background:linear-gradient(135deg,var(--purple),var(--pink));border-color:transparent;color:white;}
+    .search-disc{
+      padding:8px 16px;background:var(--card);border:1.5px solid var(--border);
+      border-radius:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.85rem;outline:none;
+      flex:1;min-width:200px;
+    }
+    .search-disc::placeholder{color:var(--muted);}
+
+    /* DISCUSSION CARD */
+    .disc-card{
+      background:var(--card);border:1px solid var(--border);border-radius:18px;
+      padding:18px 20px;margin-bottom:12px;cursor:pointer;
+      transition:all 0.25s;animation:fadeIn 0.4s ease;
+    }
+    .disc-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(155,89,245,0.15);}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+    .disc-header{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}
+    .disc-avatar{
+      width:36px;height:36px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,var(--pink),var(--purple));
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.8rem;font-weight:800;color:white;
+    }
+    .disc-meta{flex:1;}
+    .disc-title{font-weight:800;font-size:1rem;margin-bottom:4px;line-height:1.4;}
+    .disc-info{font-size:0.75rem;color:var(--muted);}
+    .disc-solved{
+      padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;
+      background:rgba(6,214,160,0.2);color:var(--cyan);flex-shrink:0;
+    }
+    .disc-preview{font-size:0.85rem;color:var(--muted);line-height:1.5;margin-bottom:12px;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .disc-footer{display:flex;gap:12px;align-items:center;}
+    .disc-stat{font-size:0.78rem;color:var(--muted);font-weight:700;}
+    .disc-cat{
+      padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;
+      background:rgba(155,89,245,0.15);color:var(--purple);
+    }
+    .disc-tags{display:flex;gap:5px;flex-wrap:wrap;}
+    .dtag{padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;background:rgba(255,255,255,0.06);color:var(--muted);}
+
+    /* MODAL */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);
+      z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;
+    }
+    .modal-overlay.show{display:flex;}
+    .modal{
+      background:var(--card);border:1px solid var(--border);border-radius:24px;
+      padding:32px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;
+      animation:modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes modalIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:none}}
+    .modal-title{font-size:1.3rem;font-weight:900;margin-bottom:20px;}
+    .modal-close{
+      position:absolute;top:16px;right:20px;background:none;border:none;
+      color:var(--muted);font-size:1.4rem;cursor:pointer;
+    }
+    .field{margin-bottom:16px;}
+    .field label{display:block;font-size:0.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+    .field input,.field textarea,.field select{
+      width:100%;padding:11px 14px;background:rgba(255,255,255,0.05);
+      border:1.5px solid var(--border);border-radius:12px;
+      color:var(--text);font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.3s;
+    }
+    .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--purple);}
+    .field textarea{min-height:100px;resize:none;}
+    .field select option{background:var(--card);}
+    .btn-submit{
+      width:100%;padding:12px;background:linear-gradient(135deg,var(--pink),var(--purple));
+      border:none;border-radius:12px;color:white;font-family:'Nunito',sans-serif;
+      font-weight:800;font-size:0.95rem;cursor:pointer;margin-top:8px;transition:all 0.2s;
+    }
+    .btn-submit:hover{transform:translateY(-1px);}
+
+    /* DETAIL VIEW */
+    .disc-detail{display:none;}
+    .back-btn{
+      display:flex;align-items:center;gap:8px;background:none;border:none;
+      color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;
+      margin-bottom:16px;padding:8px 0;transition:color 0.2s;
+    }
+    .back-btn:hover{color:var(--text);}
+    .detail-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;}
+    .detail-title{font-size:1.4rem;font-weight:900;margin-bottom:12px;}
+    .detail-content{font-size:0.95rem;line-height:1.7;color:var(--text);margin-bottom:16px;}
+    .btn-solve{
+      padding:6px 16px;border:1.5px solid var(--cyan);color:var(--cyan);
+      border-radius:10px;background:transparent;font-family:'Nunito',sans-serif;
+      font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.2s;
+    }
+    .btn-solve:hover{background:rgba(6,214,160,0.15);}
+
+    /* REPLIES */
+    .replies-section{margin-top:16px;}
+    .reply-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;}
+    .reply-author{font-weight:800;font-size:0.85rem;margin-bottom:6px;}
+    .reply-text{font-size:0.9rem;line-height:1.6;}
+    .reply-input-area{
+      background:var(--card);border:1px solid var(--border);border-radius:16px;
+      padding:16px;margin-top:10px;
+    }
+    .reply-input{
+      width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);
+      border:1px solid var(--border);border-radius:10px;
+      color:var(--text);font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;
+      resize:none;min-height:80px;margin-bottom:10px;
+    }
+    .btn-reply{
+      padding:8px 20px;background:linear-gradient(135deg,var(--cyan),var(--blue));
+      border:none;border-radius:10px;color:white;font-family:'Nunito',sans-serif;
+      font-weight:700;cursor:pointer;font-size:0.85rem;
+    }
+    .loading{text-align:center;padding:40px;color:var(--muted);}
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+<div class="page">
+
+  <!-- LIST VIEW -->
+  <div id="listView">
+    <div class="page-header">
+      <h1>📢 Discussions</h1>
+      <button class="btn-new" onclick="openNewModal()">+ New Discussion</button>
+    </div>
+
+    <div class="filters">
+      <input class="search-disc" id="searchDisc" placeholder="🔍 Search discussions..."/>
+      <button class="cat-btn active" onclick="filterCat('All',this)">🌐 All</button>
+      <button class="cat-btn" onclick="filterCat('General',this)">General</button>
+      <button class="cat-btn" onclick="filterCat('Technical',this)">⚙️ Technical</button>
+      <button class="cat-btn" onclick="filterCat('Career',this)">💼 Career</button>
+      <button class="cat-btn" onclick="filterCat('Projects',this)">🚀 Projects</button>
+      <button class="cat-btn" onclick="filterCat('Events',this)">📅 Events</button>
+    </div>
+
+    <div id="discList"><div class="loading">Loading discussions... 💬</div></div>
+  </div>
+
+  <!-- DETAIL VIEW -->
+  <div id="detailView" class="disc-detail">
+    <button class="back-btn" onclick="showList()">← Back to Discussions</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- NEW DISCUSSION MODAL -->
+<div class="modal-overlay" id="newModal" onclick="closeModal(event)">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeNewModal()">✕</button>
+    <div class="modal-title">📢 Start a Discussion</div>
+    <div class="field">
+      <label>Title</label>
+      <input id="discTitle" placeholder="What do you want to discuss?"/>
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <select id="discCat">
+        <option>General</option>
+        <option>Technical</option>
+        <option>Career</option>
+        <option>Projects</option>
+        <option>Events</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Content</label>
+      <textarea id="discContent" placeholder="Describe your question or topic in detail..."></textarea>
+    </div>
+    <div class="field">
+      <label>Tags (comma separated)</label>
+      <input id="discTags" placeholder="javascript, web-dev, react"/>
+    </div>
+    <button class="btn-submit" onclick="createDiscussion()">Post Discussion 🚀</button>
+  </div>
+</div>
+
+<script>
+var me = {};
+var allDiscs = [];
+var currentCat = 'All';
+window.addEventListener('DOMContentLoaded', function() {
+  authGuard();
+  me = JSON.parse(localStorage.getItem('user')||'{}');
+  loadDiscussions();
+  document.getElementById('searchDisc').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    const filtered = allDiscs.filter(d=>d.title.toLowerCase().includes(q)||d.content.toLowerCase().includes(q));
+    renderDiscs(filtered);
+  });
+});
+
+async function loadDiscussions() {
+  const data = await apiFetch('/discussions');
+  if (!data) return;
+  allDiscs = data;
+  renderDiscs(data);
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = cat==='All' ? allDiscs : allDiscs.filter(d=>d.category===cat);
+  renderDiscs(filtered);
+}
+
+function renderDiscs(discs) {
+  const list = document.getElementById('discList');
+  if (!discs.length) {
+    list.innerHTML='<div class="loading">No discussions found. Start one! 📢</div>';
+    return;
+  }
+  list.innerHTML = discs.map(d => `
+    <div class="disc-card" onclick="openDisc('${d._id}')">
+      <div class="disc-header">
+        <div class="disc-avatar">${d.author?.name?d.author.name[0].toUpperCase():'?'}</div>
+        <div class="disc-meta">
+          <div class="disc-title">${d.title}</div>
+          <div class="disc-info">${d.author?.name||'Unknown'} · ${d.author?.college||''}</div>
+        </div>
+        ${d.isSolved?'<span class="disc-solved">✅ Solved</span>':''}
+      </div>
+      <div class="disc-preview">${d.content}</div>
+      <div class="disc-footer">
+        <span class="disc-cat">${d.category}</span>
+        <span class="disc-stat">💬 ${d.replies?.length||0}</span>
+        <span class="disc-stat">👁 ${d.views||0}</span>
+        <div class="disc-tags">${(d.tags||[]).map(t=>`<span class="dtag">#${t}</span>`).join('')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function openDisc(id) {
+  const d = await apiFetch(`/discussions/${id}`);
+  if (!d) return;
+  document.getElementById('listView').style.display='none';
+  document.getElementById('detailView').style.display='block';
+  const isAuthor = d.author?._id===me._id;
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-card">
+      <div class="disc-header">
+        <div class="disc-avatar">${d.author?.name?d.author.name[0].toUpperCase():'?'}</div>
+        <div class="disc-meta">
+          <div class="disc-info">${d.author?.name||'Unknown'} · ${d.author?.college||''}</div>
+        </div>
+        ${d.isSolved?'<span class="disc-solved">✅ Solved</span>':''}
+        ${isAuthor?`<button class="btn-solve" onclick="toggleSolve('${d._id}',this)">${d.isSolved?'Unmark Solved':'Mark as Solved'}</button>`:''}
+      </div>
+      <div class="detail-title">${d.title}</div>
+      <div class="detail-content">${d.content}</div>
+      <div class="disc-tags">${(d.tags||[]).map(t=>`<span class="dtag">#${t}</span>`).join('')}</div>
+    </div>
+    <div class="replies-section">
+      <div style="font-weight:800;font-size:1rem;margin-bottom:12px;">💬 ${d.replies?.length||0} Replies</div>
+      ${(d.replies||[]).map(r=>`
+        <div class="reply-card">
+          <div class="reply-author">${r.author?.name||'Unknown'} · <span style="color:var(--muted);font-weight:600">${r.author?.college||''}</span></div>
+          <div class="reply-text">${r.content}</div>
+        </div>
+      `).join('')}
+      <div class="reply-input-area">
+        <textarea class="reply-input" id="replyInput" placeholder="Write your reply... (be helpful! 💡)"></textarea>
+        <button class="btn-reply" onclick="submitReply('${d._id}')">Post Reply ✨</button>
+      </div>
+    </div>
+  `;
+}
+
+async function toggleSolve(id, btn) {
+  const data = await apiFetch(`/discussions/${id}/solve`, {method:'PATCH'});
+  if (!data) return;
+  btn.textContent = data.isSolved ? 'Unmark Solved' : 'Mark as Solved';
+  loadDiscussions();
+}
+
+async function submitReply(id) {
+  const content = document.getElementById('replyInput').value.trim();
+  if (!content) return;
+  await apiFetch(`/discussions/${id}/reply`, {method:'POST',body:JSON.stringify({content})});
+  openDisc(id);
+}
+
+function showList() {
+  document.getElementById('listView').style.display='block';
+  document.getElementById('detailView').style.display='none';
+}
+
+function openNewModal() {
+  document.getElementById('newModal').classList.add('show');
+}
+function closeNewModal() {
+  document.getElementById('newModal').classList.remove('show');
+}
+function closeModal(e) {
+  if (e.target===document.getElementById('newModal')) closeNewModal();
+}
+
+async function createDiscussion() {
+  const title = document.getElementById('discTitle').value.trim();
+  const content = document.getElementById('discContent').value.trim();
+  const category = document.getElementById('discCat').value;
+  const tags = document.getElementById('discTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if (!title||!content) return;
+  await apiFetch('/discussions', {method:'POST',body:JSON.stringify({title,content,category,tags})});
+  closeNewModal();
+  document.getElementById('discTitle').value='';
+  document.getElementById('discContent').value='';
+  document.getElementById('discTags').value='';
+  loadDiscussions();
+}
+
+
+</script>
+</body>
+</html>
