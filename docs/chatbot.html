@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CampusBot — CampusLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--pink:#FF6B9D;--purple:#9B59F5;--cyan:#06D6A0;--blue:#4ECDC4;--yellow:#FFD166;--bg:#0F0F1A;--card:#1A1A2E;--text:#F0F0FF;--muted:#8888AA;--border:rgba(255,255,255,0.08);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);padding-top:62px;height:100vh;overflow:hidden;}
+    .chat-layout{display:flex;flex-direction:column;height:calc(100vh - 62px);}
+
+    /* HEADER */
+    .bot-header{
+      padding:16px 24px;background:var(--card);border-bottom:1px solid var(--border);
+      display:flex;gap:14px;align-items:center;
+    }
+    .bot-avatar{
+      width:48px;height:48px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,var(--purple),var(--cyan));
+      display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+      box-shadow:0 0 20px rgba(155,89,245,0.3);
+    }
+    .bot-info{flex:1;}
+    .bot-name{font-weight:900;font-size:1.1rem;}
+    .bot-status{font-size:0.75rem;color:var(--cyan);}
+    .btn-clear{
+      padding:7px 14px;background:rgba(255,255,255,0.06);border:1px solid var(--border);
+      border-radius:10px;color:var(--muted);font-family:'Nunito',sans-serif;
+      font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;
+    }
+    .btn-clear:hover{color:var(--text);}
+
+    /* MESSAGES */
+    .messages-area{
+      flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px;
+    }
+    .messages-area::-webkit-scrollbar{width:4px;}
+    .messages-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+
+    .msg-row{display:flex;gap:10px;align-items:flex-end;animation:msgIn 0.3s ease;}
+    @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .msg-row.mine{flex-direction:row-reverse;}
+    .msg-avatar-sm{
+      width:32px;height:32px;border-radius:50%;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:0.9rem;
+    }
+    .bot-av{background:linear-gradient(135deg,var(--purple),var(--cyan));}
+    .user-av{background:linear-gradient(135deg,var(--pink),var(--purple));font-size:0.75rem;font-weight:800;color:white;}
+    .msg-bubble{
+      max-width:70%;padding:12px 16px;border-radius:18px;font-size:0.9rem;line-height:1.6;
+    }
+    .msg-row.theirs .msg-bubble{
+      background:rgba(255,255,255,0.07);border:1px solid var(--border);
+      border-bottom-left-radius:4px;
+    }
+    .msg-row.mine .msg-bubble{
+      background:linear-gradient(135deg,var(--pink),var(--purple));
+      color:white;border-bottom-right-radius:4px;
+    }
+    .msg-time{font-size:0.65rem;color:var(--muted);margin-top:4px;}
+    .msg-row.mine .msg-time{text-align:right;}
+
+    /* QUICK REPLIES */
+    .quick-replies{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+    .qr-btn{
+      padding:5px 12px;border-radius:20px;border:1.5px solid rgba(155,89,245,0.4);
+      color:var(--purple);font-size:0.78rem;font-weight:700;cursor:pointer;
+      background:transparent;transition:all 0.2s;font-family:'Nunito',sans-serif;
+    }
+    .qr-btn:hover{background:rgba(155,89,245,0.15);}
+
+    /* TYPING */
+    .typing-row{display:flex;gap:10px;align-items:flex-end;}
+    .typing-bubble{
+      padding:12px 16px;border-radius:18px;border-bottom-left-radius:4px;
+      background:rgba(255,255,255,0.07);border:1px solid var(--border);
+      display:flex;gap:4px;align-items:center;
+    }
+    .td{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:typDot 1.2s infinite;}
+    .td:nth-child(2){animation-delay:0.2s;}
+    .td:nth-child(3){animation-delay:0.4s;}
+    @keyframes typDot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+    /* INPUT */
+    .input-area{
+      padding:14px 24px;background:var(--card);border-top:1px solid var(--border);
+      display:flex;gap:10px;align-items:center;
+    }
+    .chat-input{
+      flex:1;padding:12px 18px;background:rgba(255,255,255,0.05);
+      border:1.5px solid var(--border);border-radius:14px;
+      color:var(--text);font-family:'Nunito',sans-serif;font-size:0.95rem;outline:none;
+      transition:border-color 0.3s;
+    }
+    .chat-input:focus{border-color:var(--purple);}
+    .chat-input::placeholder{color:var(--muted);}
+    .btn-send{
+      width:44px;height:44px;background:linear-gradient(135deg,var(--purple),var(--cyan));
+      border:none;border-radius:12px;color:white;cursor:pointer;font-size:1.1rem;
+      display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;
+    }
+    .btn-send:hover{transform:scale(1.08);}
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+<div class="chat-layout">
+  <div class="bot-header">
+    <div class="bot-avatar">🤖</div>
+    <div class="bot-info">
+      <div class="bot-name">CampusBot</div>
+      <div class="bot-status">🟢 Online · Your AI assistant</div>
+    </div>
+    <button class="btn-clear" onclick="clearChat()">🗑 Clear Chat</button>
+  </div>
+
+  <div class="messages-area" id="messagesArea"></div>
+
+  <div class="input-area">
+    <input class="chat-input" id="chatInput" placeholder="Ask me anything about CampusLink..."/>
+    <button class="btn-send" onclick="sendMsg()">➤</button>
+  </div>
+</div>
+
+<script>
+var me = {};
+var messages = [];
+window.addEventListener('DOMContentLoaded', function() {
+  authGuard();
+  me = JSON.parse(localStorage.getItem('user')||'{}');
+  initChat();
+  document.getElementById('chatInput').addEventListener('keypress', function(e) {
+    if (e.key==='Enter') sendMsg();
+  });
+});
+let isTyping = false;
+
+// Rule-based chatbot responses (works without API key)
+const RULES = [
+  { patterns: ['hello','hi','hey','hii','helo'], response: `Hey ${me.name||'there'}! 👋 I'm CampusBot, your AI assistant on CampusLink! How can I help you today?`, replies: ['How to post?','How to connect?','How to earn points?'] },
+  { patterns: ['post','create post','how to post','share'], response: `📝 **Creating a Post:**\n1. Go to the Feed page 🏠\n2. Click the text box at the top\n3. Write your message, pick a type (Post/Question/Project/Event)\n4. Add tags and hit **Post** ✨\n\nYou earn **+5 points** for every post!`, replies: ['What types of posts?','How to earn more points?'] },
+  { patterns: ['connect','connection','add friend','follow'], response: `🤝 **How to Connect:**\n1. Go to **Discover** page 🔍\n2. Find students from other colleges\n3. Click **Connect** button\n4. They can accept your request from their Profile\n\nOnce connected, you can chat directly! 💬`, replies: ['How to chat?','How to discover students?'] },
+  { patterns: ['chat','message','dm','talk'], response: `💬 **Real-time Chat:**\n1. Go to **Chat** page 💬\n2. Search for any student\n3. Click on them to open chat\n4. Type and send — messages are **instant**!\n\nYou can also see if they're online 🟢`, replies: ['How to connect first?','Go to chat'] },
+  { patterns: ['point','points','earn','reward','score'], response: `⭐ **How to Earn Points:**\n- Create a post → **+5 points**\n- Start a discussion → **+10 points**\n- Reply to discussion → **+5 points**\n- Get a like on your post → **+2 points**\n- Get a comment → **+1 point**\n\nCheck the **Leaderboard** to see your rank! 🏆`, replies: ['What are badges?','Show leaderboard'] },
+  { patterns: ['badge','badges','achievement'], response: `🏅 **Badges:**\nBadges are special achievements you earn for being active on CampusLink! They show up on your Profile and Leaderboard. Keep posting and helping others to unlock them! 💪`, replies: ['How to earn points?'] },
+  { patterns: ['discuss','forum','question','doubt'], response: `📢 **Using Discussions (Forum):**\n1. Go to **Discussions** page\n2. Click **+ New Discussion**\n3. Add title, category and content\n4. Others can reply and upvote!\n\nYou can mark your discussion as **Solved** ✅ once answered.`, replies: ['How to earn points?','Go to discussions'] },
+  { patterns: ['discover','find','search','student'], response: `🔍 **Discovering Students:**\n- Go to **Discover** page\n- Search by name, college, or branch\n- Filter by specific skills\n- Connect and start collaborating!`, replies: ['How to connect?','How to filter by skill?'] },
+  { patterns: ['profile','edit','update','bio','skills'], response: `👤 **Editing Your Profile:**\n1. Click **Profile** in the nav bar\n2. Click **Edit Profile** ✏️\n3. Update your bio, skills, interests, year, branch\n4. Hit **Save Changes** 💾\n\nA complete profile gets more connections!`, replies: ['What skills can I add?'] },
+  { patterns: ['notification','alert','bell'], response: `🔔 **Notifications:**\nYou get notified when someone:\n- Likes your post ❤️\n- Comments on your post 💬\n- Sends you a connection request 🤝\n- Replies to your discussion ↩️\n\nCheck the **Alerts** page to see all notifications.` },
+  { patterns: ['leaderboard','rank','top','best'], response: `🏆 **Leaderboard:**\nThe leaderboard shows top students by points! Earn points by posting, helping others, and getting likes. Top 3 students get special podium positions 🥇🥈🥉`, replies: ['How to earn points?'] },
+  { patterns: ['admin','dashboard','manage'], response: `⚙️ **Admin Dashboard:**\nOnly admins can access this. It shows all users and posts, and lets admins delete spam content or manage the platform.` },
+  { patterns: ['hackathon','event','competition','fest'], response: `📅 **Events & Hackathons:**\n1. Create a post with type **Event** 📅\n2. Or post in Discussions under Events category\n3. Others can comment, join, and connect!\n\nNetworking with multi-college students = great hackathon teams! 🔥`, replies: ['How to create post?'] },
+  { patterns: ['project','collaboration','team'], response: `🚀 **Project Collaboration:**\n1. Create a post with type **Project** 🚀\n2. Describe what you're building\n3. Add tags like your tech stack\n4. Interested students will comment and connect!\n\nThis is great for finding teammates! 💪`, replies: ['How to post?','How to connect?'] },
+  { patterns: ['internship','job','career','placement'], response: `💼 **Career Tips:**\nUse CampusLink to:\n- Build a strong profile with skills\n- Connect with students who've done internships\n- Post questions about placements in Discussions\n- Join project collaborations for portfolio\n\nKeep earning points — it shows you're active! ⭐` },
+  { patterns: ['study','tip','help','how'], response: `📚 **Study Tips from CampusBot:**\n1. Post your doubts as Questions 🙋\n2. Use the Discussion forum for academic topics\n3. Connect with seniors from other colleges\n4. Join project collaborations to learn by doing\n\nWhat topic do you need help with? 😊` },
+];
+
+function matchRule(input) {
+  const lower = input.toLowerCase();
+  for (const rule of RULES) {
+    if (rule.patterns.some(p => lower.includes(p))) {
+      return rule;
+    }
+  }
+  return null;
+}
+
+function timeNow() {
+  return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+function addMessage(text, isBot, replies=[]) {
+  const ma = document.getElementById('messagesArea');
+  const initial = me.name?me.name[0].toUpperCase():'?';
+  const div = document.createElement('div');
+  div.className = `msg-row ${isBot?'theirs':'mine'}`;
+  div.innerHTML = `
+    ${isBot?`<div class="msg-avatar-sm bot-av">🤖</div>`:`<div class="msg-avatar-sm user-av">${initial}</div>`}
+    <div>
+      <div class="msg-bubble">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>
+      <div class="msg-time">${timeNow()}</div>
+      ${replies.length?`<div class="quick-replies">${replies.map(r=>`<button class="qr-btn" onclick="quickReply('${r}')">${r}</button>`).join('')}</div>`:''}
+    </div>
+  `;
+  ma.appendChild(div);
+  ma.scrollTop = ma.scrollHeight;
+}
+
+function showTyping() {
+  const ma = document.getElementById('messagesArea');
+  const div = document.createElement('div');
+  div.className = 'typing-row'; div.id = 'typingRow';
+  div.innerHTML = `<div class="msg-avatar-sm bot-av">🤖</div><div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  ma.appendChild(div);
+  ma.scrollTop = ma.scrollHeight;
+}
+
+function hideTyping() {
+  document.getElementById('typingRow')?.remove();
+}
+
+async function sendMsg(text='') {
+  const input = document.getElementById('chatInput');
+  const msg = text || input.value.trim();
+  if (!msg || isTyping) return;
+  input.value = '';
+  addMessage(msg, false);
+  messages.push({role:'user', content:msg});
+  isTyping = true;
+
+  showTyping();
+  await new Promise(r=>setTimeout(r, 700+Math.random()*500));
+
+  // Use Ollama via backend API
+  let reply = '';
+  let quickReplies = [];
+  try {
+    const res = await fetch('http://localhost:5000/api/chatbot', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('token')},
+      body: JSON.stringify({messages})
+    });
+    const data = await res.json();
+    if (data.reply) {
+      reply = data.reply;
+    } else {
+      reply = '❌ Error: ' + (data.message || 'No response from AI');
+    }
+  } catch(e) {
+    reply = '❌ Could not connect to chatbot. Make sure server is running!\nError: ' + e.message;
+  }
+
+  hideTyping();
+  isTyping = false;
+  messages.push({role:'assistant', content:reply});
+  addMessage(reply, true, quickReplies);
+}
+
+function quickReply(text) {
+  sendMsg(text);
+}
+
+function clearChat() {
+  messages = [];
+  document.getElementById('messagesArea').innerHTML='';
+  initChat();
+}
+
+function initChat() {
+  addMessage(
+    `Hey ${me.name||'there'}! 👋 I'm **CampusBot**, your AI assistant on CampusLink!\n\nI can help you with:\n- 🏠 Navigating the platform\n- 💬 Chat & connections\n- 🚀 Projects & collaborations\n- 💡 Study tips & career advice\n\nWhat can I help you with today?`,
+    true,
+    ['How to post?', 'How to connect?', 'How to earn points?', 'Find students']
+  );
+}
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — CampusLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--pink:#FF6B9D;--purple:#9B59F5;--cyan:#06D6A0;--yellow:#FFD166;--orange:#FF8C42;--bg:#0F0F1A;--card:#1A1A2E;--text:#F0F0FF;--muted:#8888AA;--border:rgba(255,255,255,0.08);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);padding-top:62px;}
+    .page{max-width:900px;margin:0 auto;padding:24px 16px;}
+    h1{font-size:1.6rem;font-weight:900;margin-bottom:6px;}
+    .sub{color:var(--muted);margin-bottom:24px;font-size:0.88rem;}
+
+    /* STATS GRID */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
+    .stat-card{
+      background:var(--card);border:1px solid var(--border);border-radius:18px;
+      padding:18px;display:flex;align-items:center;gap:14px;
+      transition:all 0.2s;
+    }
+    .stat-icon{
+      width:48px;height:48px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;
+    }
+    .si-users{background:rgba(155,89,245,0.15);}
+    .si-posts{background:rgba(255,107,157,0.15);}
+    .si-disc{background:rgba(6,214,160,0.15);}
+    .si-online{background:rgba(255,209,102,0.15);}
+    .stat-val{font-size:1.6rem;font-weight:900;line-height:1;}
+    .stat-label{font-size:0.72rem;color:var(--muted);margin-top:3px;}
+
+    /* TABS */
+    .admin-tabs{display:flex;gap:6px;margin-bottom:20px;}
+    .atab{
+      padding:8px 18px;border-radius:10px;border:1.5px solid var(--border);
+      color:var(--muted);font-size:0.82rem;font-weight:700;cursor:pointer;
+      background:transparent;transition:all 0.2s;
+    }
+    .atab.active{background:linear-gradient(135deg,var(--purple),var(--pink));border-color:transparent;color:white;}
+
+    /* TABLE */
+    .admin-table{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
+    .table-header{
+      display:grid;padding:12px 18px;
+      font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;
+      border-bottom:1px solid var(--border);
+    }
+    .th-users{grid-template-columns:2fr 1.5fr 1fr 1fr 100px;}
+    .th-posts{grid-template-columns:2.5fr 1.5fr 80px 80px 80px;}
+    .table-row{
+      display:grid;padding:14px 18px;border-bottom:1px solid var(--border);
+      align-items:center;font-size:0.85rem;transition:background 0.15s;
+    }
+    .table-row:last-child{border-bottom:none;}
+    .table-row:hover{background:rgba(255,255,255,0.03);}
+    .table-row.th-users{grid-template-columns:2fr 1.5fr 1fr 1fr 100px;}
+    .table-row.th-posts{grid-template-columns:2.5fr 1.5fr 80px 80px 80px;}
+    .user-cell{display:flex;align-items:center;gap:10px;}
+    .mini-avatar{
+      width:32px;height:32px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,var(--pink),var(--purple));
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.75rem;font-weight:800;color:white;
+    }
+    .role-badge{
+      padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;
+    }
+    .rb-admin{background:rgba(255,107,157,0.2);color:var(--pink);}
+    .rb-student{background:rgba(155,89,245,0.15);color:var(--purple);}
+    .col-muted{color:var(--muted);}
+    .btn-action{
+      padding:4px 12px;border-radius:8px;font-size:0.72rem;font-weight:700;
+      cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);
+      font-family:'Nunito',sans-serif;transition:all 0.2s;
+    }
+    .btn-action:hover{background:rgba(255,107,157,0.15);color:var(--pink);border-color:rgba(255,107,157,0.3);}
+    .type-badge{
+      padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;
+    }
+    .tb-post{background:rgba(155,89,245,0.15);color:var(--purple);}
+    .tb-question{background:rgba(255,107,157,0.15);color:var(--pink);}
+    .tb-project{background:rgba(6,214,160,0.15);color:var(--cyan);}
+    .tb-event{background:rgba(255,209,102,0.15);color:var(--yellow);}
+    .loading{text-align:center;padding:40px;color:var(--muted);}
+    .access-denied{text-align:center;padding:60px;color:var(--pink);font-size:1.1rem;font-weight:700;}
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+<div class="page">
+  <h1>⚙️ Admin Dashboard</h1>
+  <p class="sub">Manage users, posts, and monitor platform activity</p>
+
+  <div id="adminContent"><div class="loading">Loading...</div></div>
+</div>
+
+<script>
+var me = JSON.parse(localStorage.getItem('user')||'{}');
+window.addEventListener('DOMContentLoaded', function() {
+  authGuard();
+  me = JSON.parse(localStorage.getItem('user')||'{}');
+  if (me.role === 'admin') loadAdmin();
+});
+
+if (me.role !== 'admin') {
+  document.getElementById('adminContent').innerHTML = `
+    <div class="access-denied">
+      🚫 Access Denied<br>
+      <span style="font-size:0.85rem;color:var(--muted);font-weight:400;display:block;margin-top:8px">
+        This page is only available to admins.
+      </span>
+    </div>`;
+} else {
+  loadAdmin();
+}
+
+let allUsers = [];
+let allPosts = [];
+let currentTab = 'users';
+
+async function loadAdmin() {
+  const [users, posts] = await Promise.all([
+    apiFetch('/users'),
+    apiFetch('/posts')
+  ]);
+  allUsers = users || [];
+  allPosts = posts || [];
+  renderAdmin();
+}
+
+function renderAdmin() {
+  document.getElementById('adminContent').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon si-users">👥</div>
+        <div><div class="stat-val">${allUsers.length}</div><div class="stat-label">Total Users</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-posts">📝</div>
+        <div><div class="stat-val">${allPosts.length}</div><div class="stat-label">Total Posts</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-disc">💬</div>
+        <div><div class="stat-val">${allPosts.filter(p=>p.type==='question').length}</div><div class="stat-label">Questions</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-online">🚀</div>
+        <div><div class="stat-val">${allPosts.filter(p=>p.type==='project').length}</div><div class="stat-label">Projects</div></div>
+      </div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="atab ${currentTab==='users'?'active':''}" onclick="switchTab('users',this)">👥 Users (${allUsers.length})</button>
+      <button class="atab ${currentTab==='posts'?'active':''}" onclick="switchTab('posts',this)">📝 Posts (${allPosts.length})</button>
+    </div>
+
+    <div id="tabContent"></div>
+  `;
+  renderTab();
+}
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderTab();
+}
+
+function renderTab() {
+  const tc = document.getElementById('tabContent');
+  if (currentTab === 'users') {
+    tc.innerHTML = `
+      <div class="admin-table">
+        <div class="table-header th-users">
+          <span>User</span><span>College</span><span>Points</span><span>Role</span><span>Action</span>
+        </div>
+        ${allUsers.map(u=>`
+          <div class="table-row th-users">
+            <div class="user-cell">
+              <div class="mini-avatar">${u.name?u.name[0].toUpperCase():'?'}</div>
+              <div>
+                <div style="font-weight:700">${u.name}</div>
+                <div style="font-size:0.72rem;color:var(--muted)">${u.email}</div>
+              </div>
+            </div>
+            <div class="col-muted">${u.college||'N/A'}</div>
+            <div style="font-weight:700;color:var(--yellow)">⭐ ${u.points||0}</div>
+            <div><span class="role-badge ${u.role==='admin'?'rb-admin':'rb-student'}">${u.role||'student'}</span></div>
+            <div><button class="btn-action" onclick="removeUser('${u._id}',this)">Remove</button></div>
+          </div>
+        `).join('')}
+      </div>`;
+  } else {
+    tc.innerHTML = `
+      <div class="admin-table">
+        <div class="table-header th-posts">
+          <span>Content</span><span>Author</span><span>Type</span><span>Likes</span><span>Action</span>
+        </div>
+        ${allPosts.map(p=>`
+          <div class="table-row th-posts">
+            <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${p.content?.slice(0,60)||'...'}${p.content?.length>60?'...':''}</div>
+            <div class="col-muted">${p.author?.name||'Unknown'}</div>
+            <div><span class="type-badge tb-${p.type||'post'}">${p.type||'post'}</span></div>
+            <div class="col-muted">❤️ ${p.likes?.length||0}</div>
+            <div><button class="btn-action" onclick="removePost('${p._id}',this)">Delete</button></div>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+}
+
+async function removePost(id, btn) {
+  if (!confirm('Delete this post?')) return;
+  await apiFetch(`/posts/${id}`, {method:'DELETE'});
+  allPosts = allPosts.filter(p=>p._id!==id);
+  renderTab();
+  document.querySelectorAll('.stat-val')[1].textContent = allPosts.length;
+}
+
+async function removeUser(id, btn) {
+  alert('User management requires additional backend route. Feature coming soon!');
+}
+</script>
+</body>
+</html>

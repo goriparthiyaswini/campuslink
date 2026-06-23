@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discover — CampusLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--pink:#FF6B9D;--purple:#9B59F5;--orange:#FF8C42;--yellow:#FFD166;--cyan:#06D6A0;--blue:#4ECDC4;--bg:#0F0F1A;--card:#1A1A2E;--text:#F0F0FF;--muted:#8888AA;--border:rgba(255,255,255,0.08);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);padding-top:62px;}
+    .page{max-width:900px;margin:0 auto;padding:24px 16px;}
+    h1{font-size:1.6rem;font-weight:900;margin-bottom:6px;}
+    .sub{color:var(--muted);margin-bottom:24px;font-size:0.9rem;}
+
+    /* SEARCH BAR */
+    .search-bar{
+      display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;
+    }
+    .search-input{
+      flex:1;min-width:200px;padding:12px 18px;
+      background:var(--card);border:1.5px solid var(--border);
+      border-radius:14px;color:var(--text);font-family:'Nunito',sans-serif;
+      font-size:0.95rem;outline:none;transition:border-color 0.3s;
+    }
+    .search-input:focus{border-color:var(--purple);}
+    .search-input::placeholder{color:var(--muted);}
+    .filter-select{
+      padding:12px 16px;background:var(--card);border:1.5px solid var(--border);
+      border-radius:14px;color:var(--text);font-family:'Nunito',sans-serif;
+      font-size:0.88rem;outline:none;cursor:pointer;
+    }
+    .filter-select option{background:var(--card);}
+    .btn-search{
+      padding:12px 20px;background:linear-gradient(135deg,var(--pink),var(--purple));
+      border:none;border-radius:14px;color:white;font-family:'Nunito',sans-serif;
+      font-weight:800;cursor:pointer;font-size:0.9rem;transition:all 0.2s;
+    }
+    .btn-search:hover{transform:translateY(-1px);}
+
+    /* SKILL PILLS */
+    .skill-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+    .spill{
+      padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);
+      color:var(--muted);font-size:0.78rem;font-weight:700;cursor:pointer;
+      background:transparent;transition:all 0.2s;
+    }
+    .spill.active{background:linear-gradient(135deg,var(--cyan),var(--blue));border-color:transparent;color:white;}
+
+    /* STUDENT GRID */
+    .students-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;
+    }
+    .student-card{
+      background:var(--card);border:1px solid var(--border);border-radius:20px;
+      padding:20px;transition:all 0.3s;animation:fadeIn 0.4s ease;
+      position:relative;overflow:hidden;
+    }
+    .student-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      background:linear-gradient(135deg,var(--pink),var(--purple),var(--cyan));
+    }
+    .student-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(155,89,245,0.2);}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+    .sc-header{display:flex;gap:12px;align-items:center;margin-bottom:14px;}
+    .sc-avatar{
+      width:50px;height:50px;border-radius:50%;
+      background:linear-gradient(135deg,var(--pink),var(--purple));
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.2rem;font-weight:800;color:white;flex-shrink:0;
+    }
+    .sc-name{font-weight:800;font-size:1rem;}
+    .sc-college{font-size:0.78rem;color:var(--muted);}
+    .sc-branch{font-size:0.75rem;color:var(--cyan);}
+    .sc-bio{font-size:0.82rem;color:var(--muted);margin-bottom:12px;line-height:1.5;min-height:36px;}
+    .sc-skills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+    .sc-skill{
+      padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;
+      background:rgba(155,89,245,0.15);color:var(--purple);
+    }
+    .sc-actions{display:flex;gap:8px;}
+    .btn-connect{
+      flex:1;padding:8px;background:linear-gradient(135deg,var(--pink),var(--purple));
+      border:none;border-radius:10px;color:white;font-family:'Nunito',sans-serif;
+      font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.2s;
+    }
+    .btn-connect:hover{transform:translateY(-1px);}
+    .btn-connect.sent{background:rgba(255,255,255,0.08);color:var(--muted);}
+    .btn-msg{
+      padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);
+      border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;
+      font-weight:700;font-size:0.82rem;cursor:pointer;text-decoration:none;
+      display:flex;align-items:center;
+    }
+    .sc-points{font-size:0.75rem;color:var(--yellow);font-weight:700;margin-top:8px;}
+    .loading{text-align:center;padding:60px;color:var(--muted);font-size:1.1rem;}
+    .empty{text-align:center;padding:60px;color:var(--muted);}
+    .empty-icon{font-size:3rem;margin-bottom:12px;}
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+<div class="page">
+  <h1>✨ Discover Students</h1>
+  <p class="sub">Find and connect with students from colleges across India</p>
+
+  <div class="search-bar">
+    <input class="search-input" id="searchInput" placeholder="🔍 Search by name, college, branch..."/>
+    <select class="filter-select" id="collegeFilter">
+      <option value="">All Colleges</option>
+    </select>
+    <button class="btn-search" onclick="loadStudents()">Search</button>
+  </div>
+
+  <div class="skill-filter" id="skillFilters">
+    <button class="spill" onclick="toggleSkillFilter(this,'')">🌐 All</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'HTML')">HTML</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'JavaScript')">JavaScript</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'Python')">Python</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'Java')">Java</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'React')">React</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'Node.js')">Node.js</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'ML/AI')">ML/AI</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'DSA')">DSA</button>
+    <button class="spill" onclick="toggleSkillFilter(this,'UI/UX')">UI/UX</button>
+  </div>
+
+  <div class="students-grid" id="studentsGrid">
+    <div class="loading" style="grid-column:1/-1">Loading students... ✨</div>
+  </div>
+</div>
+
+<script>
+// Declare FIRST so onclick handlers can access them immediately
+var activeSkill = '';
+var me = {};
+
+window.addEventListener('DOMContentLoaded', function() {
+  authGuard();
+  me = JSON.parse(localStorage.getItem('user')||'{}');
+  loadStudents();
+  document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key==='Enter') loadStudents();
+  });
+});
+
+async function loadStudents() {
+  const search = document.getElementById('searchInput').value.trim();
+  const college = document.getElementById('collegeFilter').value;
+  let url = '/users?';
+  if (search) url += `search=${encodeURIComponent(search)}&`;
+  if (college) url += `college=${encodeURIComponent(college)}&`;
+  if (activeSkill) url += `skill=${encodeURIComponent(activeSkill)}`;
+  const data = await apiFetch(url);
+  if (!data) return;
+  renderStudents(data);
+  // Populate college filter
+  if (data.length) {
+    const colleges = [...new Set(data.map(u=>u.college).filter(Boolean))];
+    const sel = document.getElementById('collegeFilter');
+    sel.innerHTML = '<option value="">All Colleges</option>' + colleges.map(c=>`<option>${c}</option>`).join('');
+  }
+}
+
+function toggleSkillFilter(el, skill) {
+  document.querySelectorAll('.spill').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  activeSkill = skill;
+  loadStudents();
+}
+
+function renderStudents(students) {
+  const grid = document.getElementById('studentsGrid');
+  if (!students.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>No students found. Try different filters!</p></div>`;
+    return;
+  }
+  grid.innerHTML = students.map(s => {
+    const initials = s.name ? s.name[0].toUpperCase() : '?';
+    const isConnected = s.connections?.includes(me._id);
+    const hasPending = s.connectionRequests?.includes(me._id);
+    return `
+    <div class="student-card">
+      <div class="sc-header">
+        <div class="sc-avatar">${initials}</div>
+        <div>
+          <div class="sc-name">${s.name}</div>
+          <div class="sc-college">🏫 ${s.college||'N/A'}</div>
+          <div class="sc-branch">${s.branch||''} ${s.year?'· '+s.year:''}</div>
+        </div>
+      </div>
+      <div class="sc-bio">${s.bio||'No bio yet...'}</div>
+      <div class="sc-skills">
+        ${(s.skills||[]).slice(0,5).map(sk=>`<span class="sc-skill">${sk}</span>`).join('')}
+      </div>
+      <div class="sc-actions">
+        <button class="btn-connect ${isConnected?'sent':hasPending?'sent':''}" 
+          onclick="connect('${s._id}',this)"
+          ${isConnected||hasPending?'disabled':''}>
+          ${isConnected?'✅ Connected':hasPending?'⏳ Pending':'🤝 Connect'}
+        </button>
+        <a class="btn-msg" href="chat.html?user=${s._id}" title="Message">💬</a>
+      </div>
+      <div class="sc-points">⭐ ${s.points||0} points</div>
+    </div>`;
+  }).join('');
+}
+
+async function connect(userId, btn) {
+  const data = await apiFetch(`/users/${userId}/connect`, {method:'POST'});
+  if (!data) return;
+  btn.textContent = '⏳ Pending';
+  btn.classList.add('sent');
+  btn.disabled = true;
+}
+
+loadStudents();
+document.getElementById('searchInput').addEventListener('keypress', e => {
+  if (e.key==='Enter') loadStudents();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard — CampusLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--pink:#FF6B9D;--purple:#9B59F5;--cyan:#06D6A0;--yellow:#FFD166;--orange:#FF8C42;--bg:#0F0F1A;--card:#1A1A2E;--text:#F0F0FF;--muted:#8888AA;--border:rgba(255,255,255,0.08);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);padding-top:62px;}
+    .page{max-width:700px;margin:0 auto;padding:24px 16px;}
+    h1{font-size:1.6rem;font-weight:900;margin-bottom:6px;}
+    .sub{color:var(--muted);margin-bottom:28px;font-size:0.88rem;}
+
+    /* PODIUM */
+    .podium{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:36px;}
+    .podium-item{display:flex;flex-direction:column;align-items:center;gap:8px;}
+    .podium-rank{font-size:1.4rem;}
+    .podium-avatar{
+      border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-weight:900;color:white;
+    }
+    .podium-name{font-weight:800;font-size:0.85rem;text-align:center;}
+    .podium-college{font-size:0.72rem;color:var(--muted);text-align:center;}
+    .podium-pts{font-size:0.78rem;font-weight:800;color:var(--yellow);}
+    .podium-block{
+      display:flex;align-items:flex-end;justify-content:center;border-radius:12px 12px 0 0;
+      font-size:1.5rem;font-weight:900;color:rgba(255,255,255,0.3);padding-top:12px;
+    }
+    .p1 .podium-avatar{width:70px;height:70px;font-size:1.4rem;background:linear-gradient(135deg,#FFD166,#FF8C42);box-shadow:0 0 24px rgba(255,209,102,0.4);}
+    .p2 .podium-avatar{width:56px;height:56px;font-size:1.1rem;background:linear-gradient(135deg,#C0C0C0,#888);}
+    .p3 .podium-avatar{width:48px;height:48px;font-size:0.95rem;background:linear-gradient(135deg,#CD7F32,#8B5E3C);}
+    .p1 .podium-block{width:110px;height:90px;background:linear-gradient(180deg,rgba(255,209,102,0.2),rgba(255,209,102,0.05));}
+    .p2 .podium-block{width:90px;height:70px;background:linear-gradient(180deg,rgba(192,192,192,0.15),rgba(192,192,192,0.03));}
+    .p3 .podium-block{width:80px;height:50px;background:linear-gradient(180deg,rgba(205,127,50,0.15),rgba(205,127,50,0.03));}
+
+    /* LEADERBOARD LIST */
+    .lb-list{display:flex;flex-direction:column;gap:10px;}
+    .lb-item{
+      background:var(--card);border:1px solid var(--border);border-radius:16px;
+      padding:14px 18px;display:flex;align-items:center;gap:14px;
+      transition:all 0.2s;animation:fadeIn 0.4s ease;
+    }
+    .lb-item:hover{transform:translateX(4px);}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .lb-rank{font-size:1.1rem;font-weight:900;width:32px;text-align:center;color:var(--muted);}
+    .lb-rank.top3{color:var(--yellow);}
+    .lb-avatar{
+      width:44px;height:44px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,var(--pink),var(--purple));
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.95rem;color:white;
+    }
+    .lb-info{flex:1;}
+    .lb-name{font-weight:800;font-size:0.95rem;}
+    .lb-college{font-size:0.75rem;color:var(--muted);}
+    .lb-badges{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
+    .lb-badge{padding:2px 8px;border-radius:20px;font-size:0.65rem;font-weight:700;background:rgba(255,209,102,0.15);color:var(--yellow);}
+    .lb-points{font-size:1.1rem;font-weight:900;color:var(--yellow);}
+    .lb-pts-label{font-size:0.65rem;color:var(--muted);text-align:right;}
+
+    .my-rank-card{
+      background:linear-gradient(135deg,rgba(155,89,245,0.2),rgba(255,107,157,0.1));
+      border:1px solid rgba(155,89,245,0.3);border-radius:16px;
+      padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:14px;
+    }
+    .loading{text-align:center;padding:40px;color:var(--muted);}
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+<div class="page">
+  <h1>🏆 Leaderboard</h1>
+  <p class="sub">Top students earning points by posting, helping & collaborating</p>
+
+  <div class="my-rank-card" id="myRankCard" style="display:none">
+    <div style="font-size:1.5rem">⭐</div>
+    <div>
+      <div style="font-weight:800;font-size:0.95rem">Your Rank</div>
+      <div style="font-size:0.78rem;color:var(--muted)" id="myRankText">Loading...</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:1.4rem;font-weight:900;color:var(--yellow)" id="myPoints">0</div>
+      <div style="font-size:0.65rem;color:var(--muted)">points</div>
+    </div>
+  </div>
+
+  <div class="podium" id="podium"></div>
+  <div class="lb-list" id="lbList"><div class="loading">Loading leaderboard... 🏆</div></div>
+</div>
+
+<script>
+var me = {};
+window.addEventListener('DOMContentLoaded', function() {
+  authGuard();
+  me = JSON.parse(localStorage.getItem('user')||'{}');
+  loadLeaderboard();
+});
+
+async function loadLeaderboard() {
+  const data = await apiFetch('/users/leaderboard/top');
+  if (!data) return;
+
+  // Podium (top 3)
+  const top3 = data.slice(0,3);
+  if (top3.length >= 3) {
+    document.getElementById('podium').innerHTML = `
+      <div class="podium-item p2">
+        <span class="podium-rank">🥈</span>
+        <div class="podium-avatar">${top3[1].name[0].toUpperCase()}</div>
+        <div class="podium-name">${top3[1].name}</div>
+        <div class="podium-college">${top3[1].college||''}</div>
+        <div class="podium-pts">⭐ ${top3[1].points}</div>
+        <div class="podium-block">2</div>
+      </div>
+      <div class="podium-item p1">
+        <span class="podium-rank">🥇</span>
+        <div class="podium-avatar">${top3[0].name[0].toUpperCase()}</div>
+        <div class="podium-name">${top3[0].name}</div>
+        <div class="podium-college">${top3[0].college||''}</div>
+        <div class="podium-pts">⭐ ${top3[0].points}</div>
+        <div class="podium-block">1</div>
+      </div>
+      <div class="podium-item p3">
+        <span class="podium-rank">🥉</span>
+        <div class="podium-avatar">${top3[2].name[0].toUpperCase()}</div>
+        <div class="podium-name">${top3[2].name}</div>
+        <div class="podium-college">${top3[2].college||''}</div>
+        <div class="podium-pts">⭐ ${top3[2].points}</div>
+        <div class="podium-block">3</div>
+      </div>
+    `;
+  }
+
+  // Full list
+  document.getElementById('lbList').innerHTML = data.map((u,i) => `
+    <div class="lb-item">
+      <div class="lb-rank ${i<3?'top3':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+      <div class="lb-avatar">${u.name[0].toUpperCase()}</div>
+      <div class="lb-info">
+        <div class="lb-name">${u.name} ${u._id===me._id?'<span style="color:var(--cyan);font-size:0.72rem">(You)</span>':''}</div>
+        <div class="lb-college">${u.college||'Student'}</div>
+        <div class="lb-badges">${(u.badges||[]).map(b=>`<span class="lb-badge">🏅 ${b}</span>`).join('')}</div>
+      </div>
+      <div>
+        <div class="lb-points">${u.points||0}</div>
+        <div class="lb-pts-label">points</div>
+      </div>
+    </div>
+  `).join('');
+
+  // My rank
+  const myIdx = data.findIndex(u=>u._id===me._id);
+  if (myIdx>=0) {
+    document.getElementById('myRankCard').style.display='flex';
+    document.getElementById('myRankText').textContent = `Rank #${myIdx+1} out of ${data.length}`;
+    document.getElementById('myPoints').textContent = data[myIdx].points||0;
+  }
+}
+
+</script>
+</body>
+</html>
