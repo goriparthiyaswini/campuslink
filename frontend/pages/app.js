@@ -1,5 +1,5 @@
 // CampusLink - Main App JavaScript
-const API = 'http://localhost:5000/api';
+const API = '/api';
 let socket;
 let currentUser = null;
 let currentChatUser = null;
@@ -148,7 +148,10 @@ function initApp() {
   }
 
   // Socket.IO
-  socket = io('http://localhost:5000', { auth: { token: localStorage.getItem('cl_token') } });
+  socket = io({
+  auth: { token: localStorage.getItem('cl_token') }
+});
+  
   socket.emit('user_online', currentUser._id);
 
   socket.on('online_users', (users) => { onlineUsers = users; });
